@@ -1,15 +1,7 @@
 "use client";
 
-import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  type User,
-} from "firebase/auth";
-import { useEffect, useState } from "react";
-import { auth, googleAuthProvider } from "@/firebase";
+import { useState } from "react";
+import { useAuth } from "@/context/auth-context";
 
 type AuthMode = "login" | "register";
 
@@ -17,19 +9,16 @@ export function EmailAuthPanel() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState<User | null>(null);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setInitialLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
+  const {
+    user,
+    initialLoading,
+    loginWithEmailAndPassword,
+    registerWithEmailAndPassword,
+    googleSignIn,
+    logout,
+  } = useAuth();
 
   const resetFormError = () => {
     setErrorMessage(null);
@@ -42,9 +31,9 @@ export function EmailAuthPanel() {
 
     try {
       if (mode === "register") {
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
+        await registerWithEmailAndPassword(email, password);
       } else {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
+        await loginWithEmailAndPassword(email, password);
       }
       setPassword("");
     } catch (error) {
@@ -62,7 +51,7 @@ export function EmailAuthPanel() {
     resetFormError();
     setPending(true);
     try {
-      await signOut(auth);
+      await logout();
     } catch {
       setErrorMessage("Sign-out failed. Please try again.");
     } finally {
@@ -75,7 +64,7 @@ export function EmailAuthPanel() {
     setPending(true);
 
     try {
-      await signInWithPopup(auth, googleAuthProvider);
+      await googleSignIn();
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
@@ -113,7 +102,10 @@ export function EmailAuthPanel() {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setMode("login")}
+          onClick={() => {
+            setMode("login");
+            resetFormError();
+          }}
           className={`rounded-md px-3 py-1.5 text-sm ${
             mode === "login" ? "bg-blue-600 text-white" : "bg-neutral-100 text-neutral-700"
           }`}
@@ -122,7 +114,10 @@ export function EmailAuthPanel() {
         </button>
         <button
           type="button"
-          onClick={() => setMode("register")}
+          onClick={() => {
+            setMode("register");
+            resetFormError();
+          }}
           className={`rounded-md px-3 py-1.5 text-sm ${
             mode === "register" ? "bg-blue-600 text-white" : "bg-neutral-100 text-neutral-700"
           }`}
