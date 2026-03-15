@@ -1,16 +1,15 @@
-import { EmailAuthPanel } from "@/components/email-auth-panel";
+import { TodoList } from "@/components/todo-list";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center gap-4 px-6">
+    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center gap-4 px-6 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">
-        Firebase Authentication
+        Firebase Todo CRUD
       </h1>
       <p className="text-sm text-neutral-600">
-        Sign in with email/password or Google (enable both providers in Firebase
-        Console first).
+        A simple todo list powered by Firestore (create, read, update, delete).
       </p>
-      <EmailAuthPanel />
+      <TodoList />
     </main>
   );
 }
